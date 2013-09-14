@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tangram - versão HTML</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
+    <link href="css/font-awesome.css" rel="stylesheet" media="screen" />
+    <link href="css/bootstrap-editable.css" rel="stylesheet" media="screen" />
+    <link href="font/stylesheet.css" rel="stylesheet" media="screen" />
+    <link href="css/ivprog.css" rel="stylesheet" media="screen" />
+  </head>
+  <body>
+    <div class="header">
+        <h1><img src="img/logo.png" title="ivProg" /></h1>
+    </div>
+    <a href="javascript: correcao()">correcao</a>
+
+    <canvas id="myCanvas" resize></canvas>
+
+    <script src="js/jquery.1.8.3.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script>
+		function correcao(){
+			paper.install(this);
+			console.log(opa());
+		}
+    </script>
+    <script type="text/javascript" src="js/paper.js"></script>
+		<script type="text/paperscript" canvas="myCanvas">
+			var figuras = [];
+			function opa(){
+				console.log(1111);
+			}
+			// Create a Paper.js Path to draw a line into it:
+			var trianguloGrande = new Path({
+				segments: [[9, 9], [281, 9], [145, 145]],
+				closed: true
+			});
+			trianguloGrande.fillColor = '#C9E791';
+			figuras.push(trianguloGrande);
+
+			var trianguloGrande2 = new Path({
+				segments: [[9, 9], [145, 145], [9, 281]],
+				closed: true
+			});
+			trianguloGrande2.fillColor = '#69BED2';
+			figuras.push(trianguloGrande2);
+
+			var trianguloMenor1 = new Path({
+				segments: [[145, 145], [213, 77], [213, 213]],
+				closed: true
+			});
+			trianguloMenor1.fillColor = '#F8F224';
+			figuras.push(trianguloMenor1);
+
+			var trianguloMenor2 = new Path({
+				segments: [[9, 281], [77,213], [145, 281]],
+				closed: true
+			});
+			trianguloMenor2.fillColor = '#F195C8';
+			figuras.push(trianguloMenor2);
+
+			var trianguloMedio = new Path({
+				segments: [[281, 145], [281,281], [145, 281]],
+				closed: true
+			});
+			trianguloMedio.fillColor = '#F5CA2D';
+			figuras.push(trianguloMedio);
+
+			var paralelogramo = new Path({
+				segments: [[213, 77], [281,9], [281, 146], [213, 213]],
+				closed: true
+			});
+			paralelogramo.fillColor = '#F03E62';
+			figuras.push(paralelogramo);
+
+			var quadrado = new Path({
+				segments: [[77, 213], [145,145], [213, 213], [145, 281]],
+				closed: true
+			});
+			quadrado.fillColor = '#A697C0';
+			figuras.push(quadrado);
+
+			// Mouse tool state
+	        var draggingIndex = -1;
+	        var deltaPoint;
+	        
+			function onMouseDown(event) {
+				//console.log(event.event.detail);
+				if (event.event.detail > 1) {
+				    //console.log('dblclick');
+				    var k = figuras.length;
+				    for (var ix = 0; ix < k; ix++) { 
+					    if (figuras[ix].contains(event.point)) {
+					    	figuras[ix].rotate(45);
+					    }
+					}
+				}
+			}
+			
+	        function onMouseDrag(event) {
+	            // Maybe hit test to see if we are on top of a circle
+	            var k = figuras.length;
+	            if (k > 0 && draggingIndex == -1) {
+	                for (var ix = 0; ix < k; ix++) {
+	                    if (figuras[ix].contains(event.point)) {
+	                    	if(deltaPoint==null){
+	                    		var p = new Point(figuras[ix].position);
+	                    		deltaPoint = event.point - p;
+	                    	}
+	                        draggingIndex = ix;
+	                        figuras[ix].selected = true;
+	                        break;
+	                    }
+	                }
+	            }
+
+	            // Should we be dragging something?
+	            if (draggingIndex > -1) {
+	            	//console.log(deltaPoint);
+	            	/*var newP = new Point(event.point)-(new Point(event.point)-new Point(deltaPoint));
+	            	console.log(newP);*/
+	                figuras[draggingIndex].position  = event.point - deltaPoint;
+	            }
+	        };
+
+	        function onMouseUp(event) {
+	            // Reset the tool state
+	            figuras[draggingIndex].selected = false;
+	            draggingIndex = -1;
+	            deltaPoint = null;
+	        };
+	        
+
+		</script>
+  </body>
+</html>
