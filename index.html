@@ -16,122 +16,159 @@
     </div>
     <a href="javascript: correcao()">correcao</a>
 
-    <canvas id="myCanvas" resize></canvas>
+    <canvas id="myCanvas" resize keepalive="true"></canvas>
 
     <script src="js/jquery.1.8.3.js"></script>
+    <script src="js/paper.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/hammer.min.js"></script>
     <script>
+    	var supportsTouch = 'ontouchstart' in window || navigator.msMaxTouchPoints;
+    	var figuras = [];
+		// Mouse tool state
+        var draggingIndex = -1;
+        var deltaPoint = null;
+        var tool = new paper.Tool();
+        var union = null;
+        tool.activate();
+
 		function correcao(){
-			paper.install(this);
-			console.log(opa());
-		}
-    </script>
-    <script type="text/javascript" src="js/paper.js"></script>
-		<script type="text/paperscript" canvas="myCanvas">
-			var figuras = [];
-			function opa(){
-				console.log(1111);
+			//paper.install(this);
+			union = figuras[0];
+			for(var i=1; i<figuras.length; i++){
+				union = union.unite(figuras[i]);
 			}
+			union.position = [300, 300];
+			union.fillColor = '#000000';
+			console.log(union);
+		}
+		
+		$(function(){
+			var canvas = document.getElementById('myCanvas');
+			// Create an empty project and a view for the canvas:
+			paper.setup(canvas);		
+
 			// Create a Paper.js Path to draw a line into it:
-			var trianguloGrande = new Path({
+			var trianguloGrande = new paper.Path({
 				segments: [[9, 9], [281, 9], [145, 145]],
 				closed: true
 			});
 			trianguloGrande.fillColor = '#C9E791';
-			figuras.push(trianguloGrande);
+			figuras.push({img: trianguloGrande, angle: 0, type: 1});
 
-			var trianguloGrande2 = new Path({
-				segments: [[9, 9], [145, 145], [9, 281]],
+			//segments: [[9, 9], [145, 145], [9, 281]],
+			var trianguloGrande2 = new paper.Path({
+				segments: [[9, 9], [281, 9], [145, 145]],
 				closed: true
 			});
-			trianguloGrande2.fillColor = '#69BED2';
-			figuras.push(trianguloGrande2);
 
-			var trianguloMenor1 = new Path({
+			trianguloGrande2.fillColor = '#69BED2';
+			figuras.push({img: trianguloGrande2, angle: 0, type: 1});
+			trianguloGrande2.rotate(270);
+
+			var trianguloMenor1 = new paper.Path({
 				segments: [[145, 145], [213, 77], [213, 213]],
 				closed: true
 			});
 			trianguloMenor1.fillColor = '#F8F224';
-			figuras.push(trianguloMenor1);
+			figuras.push({img: trianguloMenor1, angle: 0, type: 2});
 
-			var trianguloMenor2 = new Path({
+			var trianguloMenor2 = new paper.Path({
 				segments: [[9, 281], [77,213], [145, 281]],
 				closed: true
 			});
 			trianguloMenor2.fillColor = '#F195C8';
-			figuras.push(trianguloMenor2);
+			figuras.push({img: trianguloMenor2, angle: 0, type: 2});
 
-			var trianguloMedio = new Path({
+			var trianguloMedio = new paper.Path({
 				segments: [[281, 145], [281,281], [145, 281]],
 				closed: true
 			});
 			trianguloMedio.fillColor = '#F5CA2D';
-			figuras.push(trianguloMedio);
+			figuras.push({img: trianguloMedio, angle: 0, type: 3});
 
-			var paralelogramo = new Path({
+			var paralelogramo = new paper.Path({
 				segments: [[213, 77], [281,9], [281, 146], [213, 213]],
 				closed: true
 			});
 			paralelogramo.fillColor = '#F03E62';
-			figuras.push(paralelogramo);
+			figuras.push({img: paralelogramo, angle:0, type:4});
 
-			var quadrado = new Path({
+			var quadrado = new paper.Path({
 				segments: [[77, 213], [145,145], [213, 213], [145, 281]],
 				closed: true
 			});
 			quadrado.fillColor = '#A697C0';
-			figuras.push(quadrado);
+			figuras.push({img: quadrado, angle: 0, type: 5});
 
-			// Mouse tool state
-	        var draggingIndex = -1;
-	        var deltaPoint;
+			
 	        
-			function onMouseDown(event) {
-				//console.log(event.event.detail);
-				if (event.event.detail > 1) {
-				    //console.log('dblclick');
-				    var k = figuras.length;
-				    for (var ix = 0; ix < k; ix++) { 
-					    if (figuras[ix].contains(event.point)) {
-					    	figuras[ix].rotate(45);
-					    }
+			tool.onMouseDown = function(event) {
+				if(!supportsTouch){
+					if (event.event.detail > 1) {
+					    var k = figuras.length;
+					    for (var ix = 0; ix < k; ix++) { 
+						    if (figuras[ix].img.contains(event.point)) {
+						    	figuras[ix].img.rotate(45);
+						    	figuras[ix].angle = (figuras[ix].angle+45)%360;
+						    	console.log(figuras[ix].angle);
+						    }
+						}
 					}
 				}
 			}
 			
-	        function onMouseDrag(event) {
+	        tool.onMouseDrag = function(event) {
 	            // Maybe hit test to see if we are on top of a circle
 	            var k = figuras.length;
 	            if (k > 0 && draggingIndex == -1) {
 	                for (var ix = 0; ix < k; ix++) {
-	                    if (figuras[ix].contains(event.point)) {
+	                    if (figuras[ix].img.contains(event.point)) {
 	                    	if(deltaPoint==null){
-	                    		var p = new Point(figuras[ix].position);
-	                    		deltaPoint = event.point - p;
+	                    		var p = new paper.Point(figuras[ix].img.position);
+	                    		deltaPoint = new paper.Point(event.point).add({x: -1*p.x, y: -1*p.y});
+	                    		
 	                    	}
 	                        draggingIndex = ix;
-	                        figuras[ix].selected = true;
+	                        figuras[ix].img.selected = true;
 	                        break;
 	                    }
 	                }
 	            }
-
 	            // Should we be dragging something?
 	            if (draggingIndex > -1) {
-	            	//console.log(deltaPoint);
-	            	/*var newP = new Point(event.point)-(new Point(event.point)-new Point(deltaPoint));
-	            	console.log(newP);*/
-	                figuras[draggingIndex].position  = event.point - deltaPoint;
+	                figuras[draggingIndex].img.position  = new paper.Point(event.point).add({x: -1*deltaPoint.x, y: -1*deltaPoint.y});
 	            }
 	        };
 
-	        function onMouseUp(event) {
+	        tool.onMouseUp = function(event) {
 	            // Reset the tool state
-	            figuras[draggingIndex].selected = false;
+	            if(draggingIndex>=0){
+	            	figuras[draggingIndex].img.selected = false;
+	        	}
 	            draggingIndex = -1;
 	            deltaPoint = null;
 	        };
-	        
+
+	        // Draw the view now:
+			paper.view.draw();
+
+			if(supportsTouch){
+				$(canvas).hammer().on("doubletap", function(event) {
+					
+					var p = new paper.Point(event.gesture.center.pageX, event.gesture.center.pageY-102);
+				    var k = figuras.length;
+				    for (var ix = 0; ix < k; ix++) { 
+					    if (figuras[ix].img.contains(p)) {
+					    	figuras[ix].img.rotate(45);
+					    	figuras[ix].angle = (figuras[ix].angle+45)%360;
+					    	console.log(figuras[ix].angle);
+					    }
+					}
+			    });
+			}
+
+	    });
 
 		</script>
   </body>
