@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Tangram - versão HTML</title>
+    <title>Tangram</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="css/bootstrap.min.css" rel="stylesheet" media="screen" />
@@ -14,10 +14,9 @@
     <div class="header">
         <h1><img src="img/logo.png" title="ivProg" /></h1>
     </div>
-    <a href="javascript: correcao()">correcao</a>
-
-    <canvas id="myCanvas" resize keepalive="true"></canvas>
-
+    <div class="tangram">
+    	<canvas id="myCanvas" resize keepalive="true"></canvas>
+	</div>
     <script src="js/jquery.1.8.3.js"></script>
     <script src="js/paper.js"></script>
     <script src="js/bootstrap.min.js"></script>
@@ -40,7 +39,6 @@
 			}
 			union.position = [300, 300];
 			union.fillColor = '#000000';
-			console.log(union);
 		}
 		
 		$(function(){
@@ -101,7 +99,26 @@
 			quadrado.fillColor = '#A697C0';
 			figuras.push({img: quadrado, angle: 0, type: 5});
 
-			
+			var w = canvas.width;
+			var h = canvas.height;
+			for(var i=0; i<figuras.length; i++){
+				figuras[i].img.position = new paper.Point(Math.random()*w, Math.random()*h);
+			}
+
+			// tratando se redimensionou a tela
+			$(window).resize(function(){
+				var w = canvas.width;
+				var h = canvas.height;
+				for(var i=0; i<figuras.length; i++){
+					if(figuras[i].img.position._x>w){
+						figuras[i].img.position = new paper.Point(w-100, figuras[i].img.position._y);
+					}
+					if(figuras[i].img.position._y>h){
+						figuras[i].img.position = new paper.Point(figuras[i].img.position._x, h-100);
+					}
+				}
+				paper.view.draw();
+			});
 	        
 			tool.onMouseDown = function(event) {
 				if(!supportsTouch){
@@ -138,6 +155,26 @@
 	            // Should we be dragging something?
 	            if (draggingIndex > -1) {
 	                figuras[draggingIndex].img.position  = new paper.Point(event.point).add({x: -1*deltaPoint.x, y: -1*deltaPoint.y});
+
+	                /*var i = 0;
+	                if(draggingIndex==0){
+	                	i++;
+	                }
+	                var maisPerto = figuras[i].img.getNearestLocation(figuras[draggingIndex].img.position);
+	                var maisPertoInd = 0;
+	                for (var ix = 1; ix < k; ix++) {
+	                    //$("#logs").append(figuras[ix].img.segments[0]+" / ");
+	                    if(ix!=draggingIndex){
+		                    var p = figuras[ix].img.getNearestLocation(figuras[draggingIndex].img.position);
+		                    if(p.distance<maisPerto.distance){
+		                    	maisPerto = p;
+		                    	maisPertoInd = ix;
+		                    }
+	                	}
+	                }
+	                //$("#logs").append(maisPertoInd+" "+maisPerto.distance+" / ");
+	                //$("#logs").append("<br>");
+	                figuras[maisPertoInd].img.selected = true;*/
 	            }
 	        };
 
